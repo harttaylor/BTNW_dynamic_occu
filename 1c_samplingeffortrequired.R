@@ -1,3 +1,7 @@
+# Determine how many times I have to visit a site in order to be 99% sure that if a BTNW 
+# is present it will be detected. 
+# Method of determining how many recordings I have to process per site. 
+
 # attach packages
 library(tidyverse)
 library(unmarked)
