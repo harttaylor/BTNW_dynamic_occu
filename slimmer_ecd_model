@@ -1,0 +1,101 @@
+model {
+
+########## first visit ever
+	for(q in 1:npatches)
+	{
+		for(w in 1:nstations[q])
+		{
+				
+					detection[q,w,1,1]~ dbern(p[q,w,1,1])
+					
+					p[q,w,1,1] ~ dbeta(1,1)
+					
+				
+		}
+	}
+
+########## first visit from the second year on
+	for(q in 1:npatches)
+	{
+		for(w in 1:nstations[q])
+		{
+			for(e in 2:nyrs)
+			{
+				
+					detection[q,w,e,1]~ dbern(p[q,w,e,1])
+					
+					p[q,w,e,1]<- pe[q,w,e,1]*(detection[q,w,e-1,nvisits[q,w,e-1]]) + pc[q,w,e,1]*(1-detection[q,w,e-1,nvisits[q,w,e-1]])
+					
+########### extinction					
+					logit(pe[q,w,e,1])<- alpha_e + beta_e_treat[treat[q]] + beta_e_sage*sage[q,w,e] + beta_e_con*pcon[q,w] + beta_e_seis_p*prop_s[q,w,e] + beta_e_seis_d*dist_s[q,w,e] + beta_e_harv_p*prop_h[q,w,e] + beta_e_harv_d*dist_h[q,w,e] + beta_e_pipe_p*prop_p[q,w,e] + beta_e_pipe_d*dist_p[q,w,e] 
+########### colonisation
+					
+					logit(pc[q,w,e,1])<- alpha_c + beta_c_treat[treat[q]] + beta_c_sage*sage[q,w,e] + beta_c_con*pcon[q,w] + beta_c_seis_p*prop_s[q,w,e] + beta_c_seis_d*dist_s[q,w,e] + beta_c_harv_p*prop_h[q,w,e] + beta_c_harv_d*dist_h[q,w,e] + beta_c_pipe_p*prop_p[q,w,e] + beta_c_pipe_d*dist_p[q,w,e] 
+
+########### persistance
+
+					pp[q,w,e,1] <- 1- pe[q,w,e,1]
+					
+				
+			}
+		}
+	}
+
+
+########## 2:4 visits
+	for(q in 1:npatches)
+	{
+		for(w in 1:nstations[q])
+		{
+			for(e in 1:nyrs)
+			{
+				for(r in 2:nvisits[q,w,e])
+				{
+					detection[q,w,e,r]~ dbern(p[q,w,e,r])
+					
+					p[q,w,e,r]<- pe[q,w,e,r]*(detection[q,w,e,r-1]) + pc[q,w,e,r]*(1-detection[q,w,e,r-1])
+					
+########### extinction					
+					logit(pe[q,w,e,r])<- alpha_e + beta_e_treat[treat[q]] + beta_e_sage*sage[q,w,e] + beta_e_con*pcon[q,w] + beta_e_seis_p*prop_s[q,w,e] + beta_e_seis_d*dist_s[q,w,e] + beta_e_harv_p*prop_h[q,w,e] + beta_e_harv_d*dist_h[q,w,e] + beta_e_pipe_p*prop_p[q,w,e] + beta_e_pipe_d*dist_p[q,w,e] 
+					
+########### colonisation
+					
+					logit(pc[q,w,e,r])<- alpha_c + beta_c_treat[treat[q]] + beta_c_sage*sage[q,w,e] + beta_c_con*pcon[q,w] + beta_c_seis_p*prop_s[q,w,e] + beta_c_seis_d*dist_s[q,w,e] + beta_c_harv_p*prop_h[q,w,e] + beta_c_harv_d*dist_h[q,w,e] + beta_c_pipe_p*prop_p[q,w,e] + beta_c_pipe_d*dist_p[q,w,e]
+
+########### persistance
+
+					pp[q,w,e,r] <- 1- pe[q,w,e,r]
+					
+				}
+			}
+		}
+	}
+	
+	alpha_c ~dnorm(0,1/16)
+	beta_c_seis_p~dnorm(0,1/16)
+	beta_c_seis_d~dnorm(0,1/16)
+	beta_c_harv_p~dnorm(0,1/16)
+	beta_c_harv_d~dnorm(0,1/16)
+	beta_c_pipe_p~dnorm(0,1/16)
+	beta_c_pipe_d~dnorm(0,1/16)
+	beta_c_sage~dnorm(0,1/16)
+	beta_c_con~dnorm(0,1/16)
+	
+	
+	alpha_e ~dnorm(0,1/16)
+	beta_e_seis_p~dnorm(0,1/16)
+	beta_e_seis_d~dnorm(0,1/16)
+	beta_e_harv_p~dnorm(0,1/16)
+	beta_e_harv_d~dnorm(0,1/16)
+	beta_e_pipe_p~dnorm(0,1/16)
+	beta_e_pipe_d~dnorm(0,1/16)
+	beta_e_sage~dnorm(0,1/16)
+	beta_e_con~dnorm(0,1/16)
+	
+	
+	for(q in 1:3)
+	{
+		beta_c_treat[q]~dnorm(0,1/16)
+		beta_e_treat[q]~dnorm(0,1/16)
+	}
+}
