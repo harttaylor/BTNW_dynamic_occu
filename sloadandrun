@@ -1,0 +1,38 @@
+
+
+load('readytogo.Rdata')
+library(rjags)
+
+#### MCMC parameters
+nchains<-2
+thinning<-90
+niter<-27e4
+
+### fill the list
+
+datalist<-list(nyrs=nyears,npatches=npatches,nstations=nstapP,nvisits=nvis,detection=detections,dist_p=d_pipe,dist_s=d_seis,dist_h=d_harv,dist_w=d_well,prop_s=pro_seis,prop_h=pro_harv,prop_p=pro_pipe,prop_w=pro_well,treat=treats,sage=stage,pcon=peco)
+
+keep_track_of<-c("alpha_c","beta_c_pipe_d","beta_c_pipe_p","beta_c_seis_p","beta_c_seis_d","beta_c_harv_p","beta_c_harv_d","beta_c_well_p","beta_c_well_d","beta_c_sage","beta_c_con","beta_c_patch","beta_c_treat","alpha_e","beta_e_seis_p","beta_e_seis_d","beta_e_harv_p","beta_e_harv_d","beta_e_pipe_p","beta_e_pipe_d","beta_e_well_p","beta_e_well_d","beta_e_sage","beta_e_con","beta_e_patch","beta_e_treat","p","pe","pc","pp")
+
+
+#### declaring the model
+
+print("declaring the model on")
+print(Sys.time())
+mod<-jags.model(n.chains=nchains,file='slimmer_ecd_model',data=datalist)
+
+print("Starting Burn-in")
+print(Sys.time())
+#### burn-in
+
+update(mod,niter)
+
+#### MCMC
+print("starting posterior draws")
+print(Sys.time())
+posterior_draws<-coda.samples(model=mod,variable.names=keep_track_of,thin=thinning,n.iter=niter)
+print("finished")
+print(Sys.time())
+smod<-summary(posterior_draws)
+
+save.image(version=2,file="sled.Rdata")
